@@ -2,99 +2,73 @@ var express = require('express');
 var app = exports.app = express();
 var port = Number(process.env.PORT || 5000);
 
+var bodyParser = require('body-parser')
+app.use(bodyParser.json()); // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
+  extended: true
+}));
+
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.get('/', function (req, res) {
   res.render('user_select.jade');
 });
 
+var config = require('./config');
+var mongoose = require('mongoose');
+app.set('dbUrl', config.db[app.settings.env]);
+mongoose.connect(app.get('dbUrl'));
+
+var User = require('./models/user');
+
+app.get('/users', function (req, res) {
+  User.find(function (e, u) {
+    if (e) {
+      return res.status(500).send("Database connection issue");
+    } else {
+      return res.send(u);
+    }
+  });
+});
+
 app.get('/users/:id', function (req, res) {
-  var user = getUser(req.params.id);
-  if (user) {
-    res.send(user);
-  } else {
-    return res.status(400).send("No such user.");
-  }
+  User.findById(req.params.id, function (e, u) {
+    if (e) {
+      return res.status(400).send("No such user.");
+    } else {
+      return res.send(u);
+    }
+  });
+});
+
+app.put('/users/:id', function (req, res) {
+  User.update({
+    _id: req.params.id
+  }, {
+    $set: req.body
+  }).exec();
+  res.send(req.params.id);
 });
 
 app.get('/users/:id/rules', function (req, res) {
-  var user = getUser(req.params.id);
-  if (!user) {
-    res.status(400).send("No such user.");
-  } else {
-    applyRules(user, function (err, messages) {
-      if (err !== undefined) {
-        res.status(500).send(err);
-      } else {
-        res.send(messages);
-      }
-    });
-  }
+  User.findById(req.params.id, function (e, u) {
+    if (e) {
+      return res.status(400).send("No such user.");
+    } else {
+      applyRules(u, function (err, messages) {
+        if (err !== undefined) {
+          return res.status(500).send(err);
+        } else {
+          return res.send(messages);
+        }
+      });
+    }
+  });
 });
 
 app.listen(port, function () {
   console.log("Listening on " + port);
 });
-
-function getUser(id) {
-  switch (id) {
-  case "bob":
-    return new User({
-      first: "Bob",
-      last: "Belcher",
-      age: 44,
-      weight: 220,
-      height: 72,
-      sex: "m"
-    });
-  case "linda":
-    return new User({
-      first: "Linda",
-      last: "Belcher",
-      age: 42,
-      weight: 150,
-      height: 67,
-      sex: "f"
-    });
-  case "tina":
-    return new User({
-      first: "Tina",
-      last: "Belcher",
-      age: 14,
-      weight: 110,
-      height: 63,
-      sex: "f"
-    });
-  case "gene":
-    return new User({
-      first: "Gene",
-      last: "Belcher",
-      age: 10,
-      weight: 110,
-      height: 60,
-      sex: "m"
-    });
-  case "louise":
-    return new User({
-      first: "Louise",
-      last: "Belcher",
-      age: 8,
-      weight: 80,
-      height: 56,
-      sex: "f"
-    });
-  }
-};
-
-var User = function (jsonUser) {
-  this.first = jsonUser.first;
-  this.last = jsonUser.last;
-  this.age = jsonUser.age;
-  this.weight = jsonUser.weight.toFixed(1);
-  this.height = jsonUser.height
-  this.sex = jsonUser.sex;
-  this.bmi = ((this.weight / (this.height * this.height)) * 703);
-}
 
 var nools = require("nools");
 

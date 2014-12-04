@@ -18,16 +18,6 @@ html
           select.form-control(id="user-select")
             option(value="-1").
               Select a user...
-            option(value="bob").
-              Bob
-            option(value="linda").
-              Linda
-            option(value="tina").
-              Tina
-            option(value="gene").
-              Gene
-            option(value="louise").
-              Louise
       .row.user-section.error
         .col-xs-12
           hr(style="border-color: #CCC")
@@ -39,7 +29,7 @@ html
           h1#display-name
       .row.user-section
         .col-md-6.col-xs-12(style="border-right: 1px solid #CCC")
-          form.form-horizontal(role="form")
+          form.form-horizontal.user-information(role="form")
             .text-center
               h3(style="margin-bottom: 30px;").
                 User Information
@@ -58,6 +48,11 @@ html
                 Age
               .col-md-6
                 input.form-control#age(type="number")
+            .form-group
+              label.col-md-6.control-label(for="height").
+                Height (inches)
+              .col-md-6
+                input.form-control#height
             .form-group
               label.col-md-6.control-label(for="weight").
                 Weight
@@ -110,6 +105,7 @@ html
           $("#first-name").val(user.first);
           $("#last-name").val(user.last);
           $("#age").val(user.age);
+          $("#height").val(user.height);
           $("#weight").val(user.weight);
           $("#sex").val(user.sex);
 
@@ -125,11 +121,42 @@ html
       });
     };
 
+    function currentlySelectedUserId() {
+      return $($("#user-select")[0].selectedOptions).attr("val");
+    }
+
     $(document).ready(function () {
       $(".user-section").addClass("hidden");
       $(".error").addClass("hidden");
 
-      $("#user-select").val("-1").on("change", function () {
-        showUserInfo($(this).val());
+      $.ajax({
+        url: "/users",
+        success: function (users) {
+          for (var i = 0; i < users.length; ++i) {
+            $("#user-select").append("<option val='" + users[i].id + "'>" + users[i].first + " " + users[i].last + "</option>");
+          }
+        }
       });
+
+      $("#user-select").val("-1").on("change", function () {
+        showUserInfo(currentlySelectedUserId());
+      });
+
+      $(".user-information").on("change", function () {
+          $.ajax({
+              method: "put",
+              url: "/users/" + currentlySelectedUserId(),
+              data: {
+                "first": $("#first-name").val(),
+                "last": $("#last-name").val(),
+                "age": $("#age").val(),
+                "height": $("#height").val(),
+                "weight": $("#weight").val(),
+                "sex": $("#sex").val()
+              },
+              success: function (userId) {
+                evaluateRules(userId);
+              }
+            });
+        });
     });
