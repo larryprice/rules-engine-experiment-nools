@@ -1,0 +1,135 @@
+doctype html
+html
+  head
+    title Nools Demo
+    meta(name='viewport' content='width=device-width, initial-scale=1.0')
+    meta(name='description' content='Simple rules engine demo using Nools')
+    meta(name='author' content='Larry Price <larry.price.dev@gmail.com>')
+    script(src='https://code.jquery.com/jquery-2.1.1.min.js')
+    link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css")
+
+  body
+    .container
+      .row
+        .col-xs-12.text-center
+          h3 Hey! Who are you?
+      .row
+        .col-xs-4.col-xs-offset-4
+          select.form-control(id="user-select")
+            option(value="-1").
+              Select a user...
+            option(value="bob").
+              Bob
+            option(value="linda").
+              Linda
+            option(value="tina").
+              Tina
+            option(value="gene").
+              Gene
+            option(value="louise").
+              Louise
+      .row.user-section.error
+        .col-xs-12
+          hr(style="border-color: #CCC")
+      .row.error
+        .col-xs-12.text-center
+          h1#error
+      .row.user-section(style="margin-bottom: 20px;")
+        .col-xs-12.text-center
+          h1#display-name
+      .row.user-section
+        .col-md-6.col-xs-12(style="border-right: 1px solid #CCC")
+          form.form-horizontal(role="form")
+            .text-center
+              h3(style="margin-bottom: 30px;").
+                User Information
+            .form-group
+              label.col-md-6.control-label(for="first-name").
+                First Name
+              .col-md-6
+                input.form-control#first-name
+            .form-group
+              label.col-md-6.control-label(for="last-name").
+                Last Name
+              .col-md-6
+                input.form-control#last-name
+            .form-group
+              label.col-md-6.control-label(for="age").
+                Age
+              .col-md-6
+                input.form-control#age(type="number")
+            .form-group
+              label.col-md-6.control-label(for="weight").
+                Weight
+              .col-md-6
+                input.form-control#weight(type="number")
+            .form-group
+              label.col-md-6.control-label(for="sex").
+                Sex
+              .col-md-6
+                input.form-control#sex
+        .col-md-6.col-xs-12
+          .row.col-xs-12.text-center
+            h3(style="margin-bottom: 30px;").
+              Messages
+          .row.col-xs-12
+            ul#messages
+
+  script(type="text/javascript").
+    function evaluateRules(userId) {
+      $("#messages").empty();
+      $.ajax({
+        url: "/users/" + userId + "/rules",
+        success: function(data) {
+          for (var i = 0; i < data.length; ++i) {
+            $("#messages").append("<li>" + data[i] + "</li>");
+          }
+        },
+        error: function (xhr) {
+          console.log(xhr);
+        }
+      });
+    };
+
+    function showUserInfo(userId) {
+      $(".user-section").addClass("hidden");
+      $(".error").addClass("hidden");
+
+      if (userId === "-1") {
+        return;
+      }
+
+      fetchUserData(userId);
+    };
+
+    function fetchUserData(userId) {
+      $.ajax({
+        url: "/users/" + userId,
+        success: function (user) {
+          $("#display-name").text(user.first + " " + user.last);
+          $("#first-name").val(user.first);
+          $("#last-name").val(user.last);
+          $("#age").val(user.age);
+          $("#weight").val(user.weight);
+          $("#sex").val(user.sex);
+
+          evaluateRules(userId)
+
+          $(".user-section").removeClass("hidden");
+        },
+        error: function (xhr) {
+          $("#error").text(xhr.textStatus);
+
+          $(".error").removeClass("hidden");
+        }
+      });
+    };
+
+    $(document).ready(function () {
+      $(".user-section").addClass("hidden");
+      $(".error").addClass("hidden");
+
+      $("#user-select").val("-1").on("change", function () {
+        showUserInfo($(this).val());
+      });
+    });

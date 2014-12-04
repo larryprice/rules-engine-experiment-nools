@@ -15,5 +15,10 @@
   "bugs": {
     "url": "https://github.com/larryprice/rules-engine-experiment-nools/issues"
   },
-  "homepage": "https://github.com/larryprice/rules-engine-experiment-nools"
+  "homepage": "https://github.com/larryprice/rules-engine-experiment-nools",
+  "devDependencies": {
+    "express": "^4.10.4",
+    "jade": "^1.8.1",
+    "nools": "^0.3.0"
+  }
 }
