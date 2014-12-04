@@ -1,0 +1,19 @@
+{
+  "name": "rules-engine-experiment-nools",
+  "version": "0.0.0",
+  "description": "Using Nools to play around with modern Rules Engines",
+  "main": "web.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/larryprice/rules-engine-experiment-nools.git"
+  },
+  "author": "Larry Price <larry.price.dev@gmail.com> (http://larry-price.com/)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/larryprice/rules-engine-experiment-nools/issues"
+  },
+  "homepage": "https://github.com/larryprice/rules-engine-experiment-nools"
+}
